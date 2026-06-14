@@ -1,0 +1,42 @@
+[
+{
+"company": "Microsoft",
+"expected": "GREEN"
+},
+{
+"company": "Google",
+"expected": "GREEN"
+},
+{
+"company": "Amazon",
+"expected": "GREEN"
+},
+{
+"company": "Apple",
+"expected": "GREEN"
+},
+{
+"company": "Meta",
+"expected": "GREEN"
+},
+{
+"company": "Small Local Consulting",
+"expected": "YELLOW"
+},
+{
+"company": "Neighborhood IT Services",
+"expected": "YELLOW"
+},
+{
+"company": "Regional Accounting Group",
+"expected": "YELLOW"
+},
+{
+"company": "Local Manufacturing Company",
+"expected": "YELLOW"
+},
+{
+"company": "Startup XYZ",
+"expected": "YELLOW"
+}
+]
