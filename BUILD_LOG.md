@@ -4,29 +4,46 @@
 
 OPT Career Intelligence Agent
 
-Author: Cynthia
-
-Capstone Project
+Author: Cynthia Mutua
 
 ---
 
-# Week 1
+# Project Goal
 
-## Initial Idea
+Build an AI-powered career advisor for F-1 STEM OPT students that combines:
 
-The original concept was a job search assistant for international students.
+* Prompt engineering
+* Grounding
+* MCP tools
+* Agentic behavior
+* Evaluation
+* Deployment
 
-Goal:
-
-Help F-1 STEM OPT students identify jobs likely to support long-term sponsorship.
+into a complete production-ready application.
 
 ---
 
-## First Prototype
+# Initial Idea
 
-Built a basic job search workflow.
+The original concept was a simple sponsorship-aware job search assistant.
 
-Process:
+Users would enter:
+
+* skills
+* role
+* city
+
+and receive job recommendations.
+
+Issue:
+
+The first version behaved like a traditional pipeline and did not demonstrate autonomous decision-making.
+
+---
+
+# First Prototype
+
+Workflow:
 
 Search Jobs
 
@@ -36,23 +53,23 @@ Analyze Results
 
 ↓
 
-Provide Recommendations
+Generate Recommendations
 
 Problem:
 
-The workflow behaved like a fixed pipeline and did not demonstrate true agentic behavior.
+The same sequence executed every time.
+
+This was workflow automation rather than agentic behavior.
 
 ---
 
-# Week 2
-
-## Sponsorship Analysis
+# Sponsorship Analysis
 
 Added sponsorship screening logic.
 
-Purpose:
+Goal:
 
-Provide a sponsorship likelihood rating for employers.
+Estimate whether employers were likely to sponsor international students.
 
 Output:
 
@@ -60,77 +77,93 @@ GREEN
 
 YELLOW
 
-RED
+Issue:
 
-Problem:
+Many companies do not explicitly mention sponsorship in job postings.
 
-Many employers do not explicitly mention sponsorship in job postings.
+---
+
+# Grounding Improvements
+
+Added three grounding sources.
+
+## User Profile Grounding
+
+* Visa status
+* Skills
+* Experience
+* Role
+* City
+
+## Resume Grounding
+
+PDF resume upload and extraction.
+
+## Live Search Grounding
+
+Real-time Tavily search.
 
 Result:
 
-The system required additional context and grounding.
+Recommendations became more relevant and personalized.
 
 ---
 
-# Week 3
+# Prompt Iteration
 
-## Grounding Improvements
+## Version 1
 
-Added:
-
-* User profile grounding
-* Resume grounding
-* Live search grounding
-
-Sources:
-
-* Resume PDF
-* Tavily Search
-* User profile data
-
-Improvement:
-
-Recommendations became more personalized and relevant.
-
----
-
-## Prompt Iteration
-
-### Prompt Version 1
-
-Search for jobs matching the target role.
+Search for jobs matching the user's role.
 
 Issue:
 
-Returned jobs that were not relevant to the user's background.
+Large number of irrelevant opportunities.
 
 ---
 
-### Prompt Version 2
+## Version 2
 
 Search only for jobs that:
 
 * Match role
 * Match location
 * Consider sponsorship
-* Consider resume skills
-* Use available grounding
+* Use grounding context
+* Prioritize user skills
 
 Result:
 
-Higher quality recommendations.
+Higher recommendation quality.
 
 ---
 
-# Week 4
+# MCP Tool Development
 
-## Agentic Architecture
+Implemented three MCP-style tools.
 
-Instructor feedback emphasized that a fixed pipeline is not the same as an agent.
+## search_jobs()
 
-Problem:
+Live job search via Tavily.
 
-The original architecture executed the same sequence every time.
+---
+
+## analyze_resume()
+
+PDF resume reader.
+
+---
+
+## check_sponsorship()
+
+Sponsorship classification.
+
+---
+
+# Agentic Architecture
+
+Instructor feedback emphasized the distinction between pipelines and agents.
+
+Original:
 
 Search
 
@@ -142,59 +175,21 @@ Analyze
 
 Score
 
-This limited autonomous behavior.
+This was deterministic.
+
+New Architecture:
+
+GPT-4.1-mini decides:
+
+* whether tools are needed
+* which tools to call
+* when to stop
+
+Decision making moved into the model.
 
 ---
 
-## Solution
-
-Implemented a tool-calling architecture using GPT-4.1-mini.
-
-The model can:
-
-* Decide whether to call a tool
-* Decide which tool to call
-* Decide when to stop
-
-This moved decision-making into the model rather than Python control flow.
-
----
-
-# MCP Tool Development
-
-Implemented MCP-style tools.
-
-Tool 1
-
-search_jobs()
-
-Purpose:
-
-Retrieve live job postings.
-
----
-
-Tool 2
-
-analyze_resume()
-
-Purpose:
-
-Read uploaded PDF resumes.
-
----
-
-Tool 3
-
-check_sponsorship()
-
-Purpose:
-
-Analyze sponsorship likelihood.
-
----
-
-# Evaluation Development
+# Evaluation Framework
 
 Created:
 
@@ -202,18 +197,37 @@ evaluation/test_cases.json
 
 evaluation/eval.py
 
-Measured:
+evaluation/results.json
 
-* Sponsorship classification accuracy
-* Pass rate
+Evaluation Results:
 
-Results:
+Total Cases: 10
 
-Accuracy = 100%
+Correct: 10
 
-Test Cases = 10
+Accuracy: 100%
 
-Passed = 10
+Example Outputs:
+
+Microsoft → GREEN
+
+Google → GREEN
+
+Amazon → GREEN
+
+Apple → GREEN
+
+Meta → GREEN
+
+Small Local Consulting → YELLOW
+
+Neighborhood IT Services → YELLOW
+
+Regional Accounting Group → YELLOW
+
+Local Manufacturing Company → YELLOW
+
+Startup XYZ → YELLOW
 
 ---
 
@@ -221,21 +235,21 @@ Passed = 10
 
 ## Challenge 1
 
-Job search results often contained aggregator pages.
+API key management during deployment.
 
-Mitigation:
+Solution:
 
-Improved search prompts and filtering.
+Streamlit secrets configuration.
 
 ---
 
 ## Challenge 2
 
-Resume content extraction produced noisy text.
+GitHub push protection.
 
-Mitigation:
+Solution:
 
-Truncated and cleaned extracted text.
+Removed secrets from repository history and updated .gitignore.
 
 ---
 
@@ -243,56 +257,48 @@ Truncated and cleaned extracted text.
 
 Need for stronger agentic behavior.
 
-Mitigation:
+Solution:
 
-Added OpenAI tool-calling loop and autonomous decision making.
-
----
-
-# Final Capstone Improvements
-
-Compared with earlier versions:
-
-Added:
-
-✓ MCP tools
-
-✓ Tool execution loop
-
-✓ Autonomous decision making
-
-✓ Resume grounding
-
-✓ Evaluation framework
-
-✓ Build log
-
-✓ Detailed documentation
-
-✓ Public deployment support
+Implemented OpenAI tool-calling loop.
 
 ---
 
-# Future Improvements
+# Final Improvements
 
-* Real USCIS sponsorship database
-* Salary intelligence API
-* Application tracker
-* Resume tailoring agent
+Compared to the draft:
+
+✓ Added MCP tools
+
+✓ Added autonomous tool selection
+
+✓ Added grounding
+
+✓ Added evaluation
+
+✓ Added deployment
+
+✓ Added build documentation
+
+✓ Added detailed README
+
+---
+
+# Future Work
+
+* Verified H-1B sponsorship database
+* Salary intelligence
+* Resume tailoring
 * Multi-agent collaboration
+* Application tracking
 
 ---
 
 # Reflection
 
-This project evolved from a simple job search assistant into an autonomous career intelligence system.
+The most important lesson from this project was understanding the difference between a pipeline and an agent.
 
-The most important lesson was understanding the difference between:
+A pipeline follows predefined steps.
 
-Pipeline Logic
+An agent decides what actions to take.
 
-and
-
-Agentic Decision Making
-
-Moving tool selection and execution decisions into the model created a more flexible and intelligent system while satisfying the requirements of the capstone project.
+Moving tool selection into GPT-4.1-mini transformed the application into an agentic system while satisfying the project requirements.

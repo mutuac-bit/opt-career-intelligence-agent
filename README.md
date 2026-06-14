@@ -1,26 +1,44 @@
 # OPT Career Intelligence Agent
 
-## Overview
+## Live Application
 
-OPT Career Intelligence Agent is an AI-powered career advisor for international students on F-1 STEM OPT.
+https://opt-career-intelligence-agent.streamlit.app/
 
-The system helps students:
+## GitHub Repository
 
-* Find relevant jobs
-* Identify sponsorship-friendly employers
-* Analyze resumes
-* Prioritize applications
-* Make career decisions using live job market data
+https://github.com/mutuac-bit/opt-career-intelligence-agent
 
-Unlike traditional job boards, this application combines live search, resume grounding, sponsorship analysis, and autonomous tool use.
+---
+
+# Author
+
+Cynthia Mutua
+
+GitHub: mutuac-bit
+
+---
+
+# Overview
+
+OPT Career Intelligence Agent is an AI-powered career advisor built for international students on F-1 STEM OPT.
+
+The system helps users:
+
+* Discover relevant job opportunities
+* Evaluate visa sponsorship likelihood
+* Analyze uploaded resumes
+* Receive personalized career recommendations
+* Prioritize applications using AI reasoning
+
+Unlike traditional job boards, this application combines live search, grounding, evaluation, and autonomous tool use.
 
 ---
 
 # Problem Statement
 
-International students often spend hundreds of hours applying for jobs without knowing whether employers are likely to sponsor work visas.
+International students often spend significant time applying for jobs without knowing whether employers are likely to sponsor work visas.
 
-This project helps students focus their efforts on jobs that better match their skills, location preferences, and sponsorship needs.
+The goal of this project is to help students focus on opportunities that better align with their skills, location preferences, and sponsorship requirements.
 
 Target Users:
 
@@ -33,7 +51,7 @@ Target Users:
 
 # System Architecture
 
-The system uses GPT-4.1-mini as an autonomous orchestration agent.
+The application uses GPT-4.1-mini as an autonomous career intelligence agent.
 
 Architecture:
 
@@ -41,7 +59,7 @@ User
 
 ↓
 
-GPT-4.1-mini Career Agent
+GPT-4.1-mini
 
 ↓
 
@@ -61,29 +79,26 @@ Final Recommendation
 
 ---
 
-# Agentic Behavior
+# Models
 
-This project implements true agentic behavior.
+## GPT-4.1-mini
 
-The model decides:
+Purpose:
 
-* Whether to call a tool
-* Which tool to call
-* When to call multiple tools
-* When enough information exists
-* When to stop
+* Tool selection
+* Career reasoning
+* Resume analysis
+* Recommendation generation
 
-The Python application does not hardcode a fixed workflow.
+Reason for selection:
 
-Instead, GPT-4.1-mini determines the next action during execution.
+GPT-4.1-mini provides reliable reasoning, tool calling capability, and lower operational cost compared to larger models.
 
 ---
 
 # MCP Tool Definitions
 
-## Tool 1
-
-search_jobs()
+## Tool 1: search_jobs()
 
 Purpose:
 
@@ -96,19 +111,17 @@ Inputs:
 
 Returns:
 
-* job title
-* URL
-* job description snippet
+* title
+* url
+* content snippet
 
 ---
 
-## Tool 2
-
-analyze_resume()
+## Tool 2: analyze_resume()
 
 Purpose:
 
-Extract text from uploaded resume PDFs.
+Read uploaded resume PDFs.
 
 Inputs:
 
@@ -116,17 +129,15 @@ Inputs:
 
 Returns:
 
-* Resume text
+* extracted resume text
 
 ---
 
-## Tool 3
-
-check_sponsorship()
+## Tool 3: check_sponsorship()
 
 Purpose:
 
-Analyze sponsorship likelihood.
+Estimate sponsorship likelihood.
 
 Inputs:
 
@@ -136,14 +147,73 @@ Returns:
 
 * GREEN
 * YELLOW
+* explanation
 
-plus explanation
+---
+
+# Agentic Behavior
+
+This project implements true agentic behavior.
+
+The model decides:
+
+* Whether a tool is needed
+* Which tool should be called
+* When to call multiple tools
+* When enough information exists
+* When execution should stop
+
+The application does not force a fixed sequence of actions.
+
+Decision-making occurs inside the model.
+
+---
+
+# Evidence of Agentic Tool Use
+
+Example execution:
+
+User Request:
+
+"Find sponsorship-friendly Data Analyst jobs in Atlanta."
+
+GPT-4.1-mini decides to call:
+
+search_jobs()
+
+↓
+
+Tool returns live search results.
+
+↓
+
+GPT-4.1-mini decides to call:
+
+check_sponsorship()
+
+↓
+
+Tool returns sponsorship rating.
+
+↓
+
+GPT-4.1-mini combines:
+
+* tool outputs
+* user profile
+* resume context
+
+↓
+
+Final recommendation generated.
+
+This demonstrates autonomous tool selection and execution rather than hardcoded routing.
 
 ---
 
 # Grounding
 
-The system uses multiple grounding sources.
+The application uses multiple grounding sources.
 
 ## User Profile
 
@@ -155,13 +225,13 @@ The system uses multiple grounding sources.
 
 ## Resume Grounding
 
-Uploaded resume PDF content.
+Uploaded PDF resume content.
 
 ## Live Search Grounding
 
-Tavily web search results.
+Real-time Tavily job search results.
 
-These sources provide information unavailable from model pretraining.
+The model receives information unavailable from pretraining alone.
 
 ---
 
@@ -169,59 +239,81 @@ These sources provide information unavailable from model pretraining.
 
 ## Prompt Version 1
 
-Search for jobs matching the user's role.
+Search for jobs matching the target role.
 
-Problem:
+Issue:
 
-Returned many irrelevant results.
+Returned many irrelevant opportunities.
 
 ---
 
 ## Prompt Version 2
 
-Search only for jobs that:
+Search only for opportunities that:
 
-* Match role
+* Match target role
 * Match location
 * Consider sponsorship
 * Consider resume skills
-* Use live search evidence
+* Use live evidence
 
 Result:
 
-Improved relevance and recommendation quality.
+Higher relevance and better recommendations.
 
 ---
 
 # Evaluation
 
-Evaluation was performed using 10 sponsorship test cases.
+Evaluation was performed using 10 sponsorship classification test cases.
 
-Metrics:
+Files:
 
-{
-"accuracy": 1.00,
-"total_cases": 10,
-"correct_predictions": 10
-}
-
-Interpretation:
-
-The sponsorship classifier correctly identified all benchmark cases.
-
-Evaluation script:
+evaluation/test_cases.json
 
 evaluation/eval.py
 
-Test cases:
+evaluation/results.json
 
-evaluation/test_cases.json
+Results:
+
+Total Cases: 10
+
+Correct Predictions: 10
+
+Accuracy: 100%
+
+Evaluation Output:
+
+Microsoft → GREEN
+
+Google → GREEN
+
+Amazon → GREEN
+
+Apple → GREEN
+
+Meta → GREEN
+
+Small Local Consulting → YELLOW
+
+Neighborhood IT Services → YELLOW
+
+Regional Accounting Group → YELLOW
+
+Local Manufacturing Company → YELLOW
+
+Startup XYZ → YELLOW
+
+Final Accuracy:
+
+100.00%
 
 ---
 
 # Example Interaction
 
-Input
+Input:
 
 Role:
 Data Analyst
@@ -235,7 +327,7 @@ F-1 STEM OPT
 Skills:
 Python, SQL, Power BI
 
-Output
+Output:
 
 * Job recommendations
 * Sponsorship analysis
@@ -248,66 +340,85 @@ Output
 
 Draft Version:
 
-* Sequential pipeline
-* Limited evaluation
-* Minimal documentation
+* Limited documentation
+* Weak evaluation evidence
+* Sequential workflow
 
-Feedback:
+Instructor Feedback:
 
 * Need stronger agentic behavior
-* Need MCP tools
+* Need MCP tool implementation
 * Need evaluation evidence
+* Need clearer documentation
 
-Final Version:
+Changes Made:
 
-* Added MCP tool definitions
+* Added MCP tools
 * Added tool execution loop
-* Added autonomous decision making
 * Added evaluation framework
-* Added documentation
+* Added build log
+* Added grounding sources
+* Added detailed architecture documentation
 
 ---
 
 # Limitations
 
 * Sponsorship analysis uses heuristics
-* Not connected to USCIS sponsor database
+* Not connected to USCIS sponsorship databases
 * Search quality depends on Tavily results
 * Large resumes may be truncated
 
 ---
 
-# Future Work
+# Future Improvements
 
-* Real H-1B sponsor database integration
-* Application tracking dashboard
+* H-1B sponsor database integration
+* Salary intelligence
 * Resume tailoring agent
-* Salary intelligence tools
+* Application tracking dashboard
 * Multi-agent collaboration
 
 ---
 
 # Deployment
 
-Requirements:
-
-* OPENAI_API_KEY
-* TAVILY_API_KEY
-
-Run:
-
-streamlit run app.py
-
-Deploy:
+Platform:
 
 Streamlit Community Cloud
 
+Requirements:
+
+OPENAI_API_KEY
+
+TAVILY_API_KEY
+
+Run Locally:
+
+streamlit run app.py
+
 ---
 
-# Repository
+# Repository Structure
 
-Author: Finnete
+app.py
 
-Capstone Project
+tools.py
 
-Generative AI Applications
+requirements.txt
+
+README.md
+
+BUILD_LOG.md
+
+evaluation/
+
+* eval.py
+* test_cases.json
+* results.json
+
+---
+
+# Conclusion
+
+This project combines prompt engineering, grounding, MCP tools, evaluation, and agentic decision making into a deployable AI application that solves a real problem for international students pursuing career opportunities in the United States.
