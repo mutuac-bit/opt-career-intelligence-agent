@@ -421,17 +421,6 @@ Networking Recommendations
 
 Risk Assessment
 
----
-
-## 30-Day Action Plan
-
-Week 1
-
-Week 2
-
-Week 3
-
-Week 4
 
 ---
 
@@ -463,6 +452,7 @@ evaluation/results.json
 
 ## Evaluation Dataset
 
+
 10 sponsorship classification scenarios.
 
 Examples:
@@ -485,7 +475,6 @@ Regional Accounting Group
 
 Local Manufacturing Company
 
-Startup XYZ
 
 ---
 
@@ -594,27 +583,6 @@ Potential future improvements include:
 * Multi-agent collaboration
 * Employer sponsorship history analysis
 
----
-
-# Deployment Instructions
-
-Clone Repository:
-
-git clone https://github.com/mutuac-bit/opt-career-intelligence-agent.git
-
-Install Dependencies:
-
-pip install -r requirements.txt
-
-Create Streamlit Secrets:
-
-OPENAI_API_KEY = "your_key"
-
-TAVILY_API_KEY = "your_key"
-
-Run Application:
-
-streamlit run app.py
 
 ---
 
