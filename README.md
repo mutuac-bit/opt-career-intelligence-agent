@@ -1,632 +1,87 @@
 # OPT Career Intelligence Agent
 
-## Live Application
+An agentic AI tool that helps international students on F-1 OPT/STEM OPT find jobs that will actually sponsor their visa — grounded in real USCIS H-1B government data.
 
-https://opt-career-intelligence-agent.streamlit.app/
+**Live app:** https://opt-career-intelligence-agent.streamlit.app/
 
-## GitHub Repository
+## What it does
 
-https://github.com/mutuac-bit/opt-career-intelligence-agent
+You enter your profile (visa status, skills, experience, target role and city) and optionally upload your resume. An autonomous agent then:
+1. Searches live job postings for your role and city
+2. Looks up each company's **real H-1B petition history** from USCIS FY2026 data
+3. Scores each job for fit against your profile
+4. Returns a comparison table ranking jobs by fit and real sponsorship likelihood, plus a personalized strategy
 
+## Who it's for
 
----
+International students on F-1 OPT/STEM OPT who waste time applying to companies that will never sponsor them. This matters to me because it made my job search experience brutal, and I want to make this experience seamless for students and professionals like us.
 
-# Project Overview
+## System architecture
 
-OPT Career Intelligence Agent is an AI-powered career strategy platform designed specifically for international students studying in the United States under F-1 OPT and STEM OPT status.
+- **Model:** Llama 3.3 70B (via Groq) — drives all decisions and tool calls
+- **Search tool:** Tavily API — live job postings
+- **Sponsorship tool:** local lookup against real USCIS H-1B Employer Data Hub (FY2026, 36,631 employers)
+- **Resume tool:** PDF text extraction via pypdf
+- **Frontend/deploy:** Streamlit + Streamlit Community Cloud
 
-The application helps students identify career opportunities, evaluate sponsorship potential, analyze resumes, discover skill gaps, and create a targeted application strategy using autonomous AI decision-making.
+The agent runs an OpenAI-style tool-calling loop. The model — not hardcoded Python — decides which tools to call, when, and how many times.
 
-Unlike traditional job boards that only return job listings, this system combines live job market intelligence, visa sponsorship analysis, resume evaluation, and career planning into a single AI-driven workflow.
+## What's agentic about it
 
----
+The model receives the user request and autonomously decides to call `search_jobs`, then decides to call `check_sponsorship` for each company it finds, reads the results, and decides when it has enough to write the final report. The execution loop in `app.py` provides the tools; the model is in the driver's seat. If you replaced the model with if-statements, the system could not adapt its tool use to different searches — so this passes the agentic test.
 
-# Problem Statement
+## The three tools (MCP)
 
-International students face a unique challenge when applying for jobs in the United States.
+**search_jobs(role, city)** — queries Tavily for live postings. Returns titles, URLs, and snippets the model could not know from training.
 
-Many companies advertise positions without clearly indicating whether visa sponsorship is available. Students often spend significant time applying to positions that are unlikely to support long-term employment authorization.
+**check_sponsorship(company_name)** — looks up a company in the real USCIS H-1B dataset and returns actual approval counts, denial counts, and approval rate. This is grounded government data, not an estimate.
 
-This project was created to help international students make smarter application decisions by:
+**analyze_resume()** — extracts text from the uploaded PDF so recommendations are personalized.
 
-* Finding relevant job opportunities
-* Evaluating sponsorship potential
-* Analyzing resumes
-* Identifying skill gaps
-* Prioritizing applications
-* Creating personalized action plans
+## Grounding
 
-Target Users:
+The model is grounded by three real sources it could never get from pretraining: the user's profile, their uploaded resume, live Tavily job search, and — most importantly — the real USCIS H-1B petition dataset bundled in this repo.
 
-* F-1 Students
-* STEM OPT Students
-* International Graduates
-* Early Career Professionals
-* Students seeking H-1B sponsorship pathways
+## Prompt engineering (three versions)
 
----
+**v1:** "Find jobs matching the user's role." → Too generic, no sponsorship focus.
 
-# System Architecture
+**v2:** Added sponsorship focus, visa awareness, and profile grounding. → Better matching, but the agent often skipped the sponsorship tool and guessed.
 
-The system combines GPT-4.1-mini, live web search, tool calling, grounding, evaluation, and deployment.
+**v3 (final):** Added a required workflow that forces the agent to call check_sponsorship for every company, plus a strict comparison-table output format. → The agent now reliably uses real data for every company and produces a scannable report.
 
-Architecture Flow:
+## Evaluation (honest)
 
-User Input
+I tested `check_sponsorship` against 10 real companies with known sponsorship reality (`evaluation/eval_real.py`).
 
-↓
+**Result: 8/10 (80%) accuracy.**
 
-GPT-4.1-mini Agent
+The two misses were informative, not hidden failures:
+- **Dice** — I expected RED (it's a job board) but it correctly returned GREEN; the company genuinely files H-1Bs.
+- **Coca-Cola** — returned YELLOW instead of RED because it files under multiple legal entity names, a known limitation of name-based lookup.
 
-↓
+I deliberately kept this at an honest 80% rather than engineering a fake 100%. Real companies like Amazon (4,102 approvals), Microsoft (2,273), and Deloitte (1,359) all classified correctly with real numbers.
 
-Autonomous Tool Selection
+## What changed from my draft
 
-↓
+My draft's `check_sponsorship` was a hardcoded list of 11 companies — a mock, not a real tool, and my instructor flagged it. I replaced it with the real USCIS dataset, rewrote the evaluation to be honest, switched from paid OpenAI to free Groq, added a comparison-table output, and added rate-limit retry handling. I also committed incrementally this time so the history shows real development. Full details in BUILD_LOG.md.
 
-search_jobs()
+## Limitations / what I'd fix with more time
 
-analyze_resume()
+- The agent's sponsorship accuracy depends on the job search returning real employer names rather than job-board aggregators (Dice, OPTnation).
+- Companies filing under different legal names (the Coca-Cola problem) can be missed by name lookup.
+- The dataset is a quarterly snapshot, not real-time (which is fine for sponsorship history, but worth noting).
 
-check_sponsorship()
+## How to run it yourself
 
-↓
+1. Clone this repo
+2. `pip install -r requirements.txt`
+3. Create `.streamlit/secrets.toml` with:
+GROQ_API_KEY = "your-key"
+TAVILY_API_KEY = "your-key" 
+4. `streamlit run app.py`
 
-Tool Results Returned
+## Example interaction
 
-↓
-
-GPT-4.1-mini Reasoning
-
-↓
-
-Career Intelligence Report
-
----
-
-# Technologies Used
-
-Frontend:
-
-* Streamlit
-
-AI Model:
-
-* GPT-4.1-mini
-
-External Tool:
-
-* Tavily Search API
-
-Programming Language:
-
-* Python
-
-Deployment:
-
-* Streamlit Community Cloud
-
-Version Control:
-
-* GitHub
-
----
-
-# Agentic Architecture
-
-This project was intentionally designed to satisfy the requirements of an agentic AI system.
-
-The model is responsible for deciding:
-
-* Whether tools should be called
-* Which tools should be called
-* How many tools should be called
-* Whether additional information is needed
-* When sufficient evidence has been gathered
-* When to stop execution
-
-The application does not use hardcoded routing logic.
-
-The model drives execution through OpenAI tool-calling.
-
-This satisfies the project definition of agentic behavior.
-
----
-
-# MCP Tool Definitions
-
-The project implements three MCP-style tools.
-
-## Tool 1: search_jobs
-
-Purpose:
-
-Search for live job opportunities using Tavily Search.
-
-Inputs:
-
-* role
-* city
-
-Example:
-
-search_jobs(
-role="Data Analyst",
-city="Atlanta"
-)
-
-Returns:
-
-* job titles
-* company names
-* URLs
-* job descriptions
-
-Why It Matters:
-
-Provides information unavailable from model pretraining.
-
----
-
-## Tool 2: analyze_resume
-
-Purpose:
-
-Read uploaded PDF resumes.
-
-Inputs:
-
-* PDF resume
-
-Returns:
-
-* extracted text
-* resume context
-
-Why It Matters:
-
-Allows the model to evaluate user-specific information rather than guessing.
-
----
-
-## Tool 3: check_sponsorship
-
-Purpose:
-
-Estimate sponsorship likelihood.
-
-Inputs:
-
-* company name
-
-Returns:
-
-* sponsorship rating
-* reasoning
-* confidence level
-
-Possible Outputs:
-
-GREEN
-
-Likely sponsor
-
-YELLOW
-
-Uncertain sponsorship
-
-Why It Matters:
-
-Provides sponsorship intelligence unavailable from static model knowledge.
-
----
-
-# Evidence of MCP Tool Execution
-
-Example Run:
-
-User Request:
-
-"Find sponsorship-friendly Data Analyst jobs in Atlanta."
-
-Step 1
-
-GPT-4.1-mini decides to call:
-
-search_jobs()
-
-Step 2
-
-Tavily returns live search results.
-
-Step 3
-
-GPT-4.1-mini decides to call:
-
-check_sponsorship()
-
-Step 4
-
-Tool returns sponsorship analysis.
-
-Step 5
-
-GPT-4.1-mini combines:
-
-* tool outputs
-* user profile
-* resume data
-
-Step 6
-
-Final recommendations are generated.
-
-This demonstrates actual tool execution and autonomous decision making.
-
----
-
-# Grounding Strategy
-
-A major requirement of Project 3 was grounding.
-
-The system uses three grounding sources.
-
-## User Profile Grounding
-
-Collected through the sidebar:
-
-* Visa Status
-* Experience
-* Skills
-* Target Role
-* Target City
-
----
-
-## Resume Grounding
-
-Users can upload resumes in PDF format.
-
-Resume content is extracted and provided to the model.
-
-This enables personalized recommendations.
-
----
-
-## Live Search Grounding
-
-Job opportunities are retrieved using Tavily.
-
-This provides:
-
-* current market information
-* current company information
-* current job opportunities
-
-The model receives information unavailable from pretraining.
-
----
-
-# Prompt Engineering
-
-Prompt engineering was deliberately iterative.
-
-## Prompt Version 1
-
-Original Prompt
-
-"Find jobs matching the user's role."
-
-Problem:
-
-Returned generic recommendations.
-
-Many results were irrelevant.
-
-No sponsorship focus.
-
----
-
-## Prompt Version 2
-
-Added:
-
-* sponsorship focus
-* visa awareness
-* user profile grounding
-* structured output requirements
-
-Improvement:
-
-Better role matching.
-
-More actionable recommendations.
-
----
-
-## Prompt Version 3 (Final)
-
-Added:
-
-* executive summary
-* sponsorship strategy
-* resume review
-* skills gap analysis
-* action planning
-* scoring framework
-
-Improvement:
-
-Generated detailed career intelligence reports instead of generic advice.
-
----
-
-# Example Output
-
-The system generates:
-
-## Executive Summary
-
-Candidate strengths
-
-Candidate weaknesses
-
-Sponsorship outlook
-
----
-
-## Job Market Intelligence
-
-Company
-
-Role Fit
-
-Location Fit
-
-Sponsorship Confidence
-
-Risk Level
-
-Recommended Action
-
----
-
-## Skills Gap Analysis
-
-Current Skills
-
-Missing Skills
-
-Recommended Certifications
-
-Recommended Projects
-
----
-
-## Resume Recommendations
-
-Missing Keywords
-
-Weak Areas
-
-Optimization Suggestions
-
----
-
-## Sponsorship Strategy
-
-Priority Companies
-
-Networking Recommendations
-
-Risk Assessment
-
-
----
-
-## Final Scores
-
-Skill Match Score
-
-Market Readiness Score
-
-Sponsorship Readiness Score
-
-Overall Competitiveness Score
-
----
-
-# Evaluation
-
-A formal evaluation framework was implemented.
-
-Files:
-
-evaluation/test_cases.json
-
-evaluation/eval.py
-
-evaluation/results.json
-
----
-
-## Evaluation Dataset
-
-
-10 sponsorship classification scenarios.
-
-Examples:
-
-Microsoft
-
-Google
-
-Amazon
-
-Apple
-
-Meta
-
-Small Local Consulting
-
-Neighborhood IT Services
-
-Regional Accounting Group
-
-Local Manufacturing Company
-
-
----
-
-## Evaluation Results
-
-Actual Run:
-
-Total Cases: 10
-
-Correct Predictions: 10
-
-Accuracy: 100.00%
-
-Console Output:
-
-Microsoft → GREEN
-
-Google → GREEN
-
-Amazon → GREEN
-
-Apple → GREEN
-
-Meta → GREEN
-
-Small Local Consulting → YELLOW
-
-Neighborhood IT Services → YELLOW
-
-Regional Accounting Group → YELLOW
-
-Local Manufacturing Company → YELLOW
-
-Startup XYZ → YELLOW
-
-Results saved to:
-
-evaluation/results.json
-
----
-
-# Iteration Based On Feedback
-
-The draft version received several areas for improvement.
-
-## Draft Weaknesses
-
-* Limited documentation
-* Weak evaluation evidence
-* Generic recommendations
-* Insufficient explanation of agentic behavior
-* Missing MCP tool documentation
-
----
-
-## Improvements Made
-
-Added:
-
-✓ OpenAI Tool Calling
-
-✓ MCP Tool Definitions
-
-✓ Tool Execution Loop
-
-✓ Evaluation Framework
-
-✓ Build Log
-
-✓ Detailed README
-
-✓ Deployment
-
-✓ Sponsorship Analysis
-
-✓ Resume Analysis
-
-✓ Grounding Sources
-
-✓ Structured Reporting
-
----
-
-# Limitations
-
-Current limitations include:
-
-* Sponsorship ratings are estimates
-* No direct USCIS integration
-* Search quality depends on Tavily results
-* Some job boards restrict content access
-* Resume parsing is basic
-
----
-
-# Future Enhancements
-
-Potential future improvements include:
-
-* H-1B sponsor database integration
-* Salary intelligence
-* Resume tailoring agent
-* Interview preparation agent
-* Application tracking dashboard
-* LinkedIn profile optimization
-* Multi-agent collaboration
-* Employer sponsorship history analysis
-
-
----
-
-# Repository Structure
-
-opt-career-intelligence-agent/
-
-├── app.py
-
-├── tools.py
-
-├── requirements.txt
-
-├── README.md
-
-├── BUILD_LOG.md
-
-├── evaluation/
-
-│   ├── eval.py
-
-│   ├── test_cases.json
-
-│   └── results.json
-
-└── .streamlit/
-
-```
-└── secrets.toml (local only)
-```
-
----
-
-# Conclusion
-
-OPT Career Intelligence Agent demonstrates the complete set of concepts covered throughout the course:
-
-* Prompt Engineering
-* System Prompts
-* Grounding
-* MCP Tools
-* Agentic Decision Making
-* Evaluation
-* Deployment
-* Iteration
-
-The final application provides real-world value to international students by helping them make more informed career decisions while navigating sponsorship challenges in the United States job market.
+Input: Data Analyst, New York, F-1 STEM OPT.
+The agent searched live postings, checked each company against USCIS data, and returned a table where Capital One (534 H-1B approvals, 99.3% approval rate) was rated GREEN / Apply Now, while job-board results with no petition history were rated RED / Skip.
