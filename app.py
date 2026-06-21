@@ -78,7 +78,7 @@ STUDENT PROFILE (grounding):
 - Skills: {skills}
 - Target Role: {target_role}
 - Target City: {target_city}
-- Resume: {resume_text[:800]}
+- Resume: {resume_text[:2000]}
 
 YOUR REQUIRED WORKFLOW — follow every step:
 1. Call search_jobs to find real job postings for the target role and city.
@@ -101,11 +101,17 @@ For each job:
 List the 3 best jobs and one sentence why each.
 
 ## 📈 Strategy Summary
-2-3 sentences of personalized application strategy based on the student's OPT timeline and the real sponsorship data found.
+## 📈 Strategy Summary
+Write 3-4 sentences of genuinely useful, respectful strategy for an international student on F-1 OPT/STEM OPT. This person is highly skilled, has invested enormously in their education, and legally requires employment that offers sponsorship to preserve their visa status — applying to non-sponsoring jobs is NOT an option for them.
 
-RULES:
-- Never invent sponsorship numbers. Only use check_sponsorship tool outputs.
-- Be honest. If most companies are RED, say so plainly.
+RULES for the strategy:
+- DO recommend prioritizing the proven sponsors found in the data (companies with real H-1B approval history).
+- DO mention cap-exempt employers (universities, nonprofits, research institutions) as a path to H-1B outside the lottery.
+- DO advise using their OPT/STEM OPT timeline strategically so an employer can initiate H-1B in time.
+- DO encourage networking into sponsor companies rather than only cold-applying.
+- DO affirm that their existing skills are strong assets.
+- NEVER tell them to "update their skills," "gain more experience first," "apply to jobs that don't require sponsorship," or "switch careers." These are insensitive and unhelpful given their constraints.
+- Be honest but encouraging. They have real options — point them to the good ones.
 """
 
         messages = [
@@ -123,7 +129,7 @@ RULES:
                 for attempt in range(4):
                     try:
                         response = client.chat.completions.create(
-                            model="llama-3.1-8b-instant",
+                            model="llama-3.3-70b-versatile",
                             messages=messages,
                             tools=TOOLS
                         )
